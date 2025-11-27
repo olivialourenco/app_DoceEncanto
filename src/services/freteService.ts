@@ -94,3 +94,5 @@ export async function calculateFreteFromStore(
   return calculateFrete(STORE_CEP, destCep, weightKg);
 }
 
+
+

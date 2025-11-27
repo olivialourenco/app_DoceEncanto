@@ -95,3 +95,5 @@ export async function getCategories(): Promise<ProductCategory[]> {
   return categories;
 }
 
+
+

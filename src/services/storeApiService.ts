@@ -65,3 +65,5 @@ export async function getHighlightedProductIds(): Promise<string[]> {
   return [];
 }
 
+
+

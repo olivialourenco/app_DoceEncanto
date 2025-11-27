@@ -51,3 +51,8 @@ coverage/
 logs/
 *.log
 
+# Windows temp files
+nul
+
+
+

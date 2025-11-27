@@ -8,20 +8,25 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
+  Text,
 } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { Address, STORAGE_KEYS } from '../types';
 import { fetchAddressByCep, formatCep, isValidCep } from '../services';
 import { usePersistentState } from '../hooks';
-import { Texto, MusicToggle } from '../components';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { Texto, MusicToggle, ThemeToggle } from '../components';
+import { useTheme } from '../contexts';
+import { spacing, borderRadius, shadows } from '../theme';
 
 export default function AddressScreen() {
+  const { colors, isDark } = useTheme();
   const [lastCep, setLastCep] = usePersistentState<string>(STORAGE_KEYS.LAST_CEP, '');
   const [cep, setCep] = useState('');
   const [address, setAddress] = useState<Address | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const styles = createStyles(colors);
 
   // Pre-fill with last used CEP
   useEffect(() => {
@@ -69,12 +74,18 @@ export default function AddressScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.white} />
 
       {/* Header */}
       <View style={styles.header}>
-        <Texto style={styles.headerTitle}>📍 Endereço de Entrega</Texto>
-        <MusicToggle size="small" />
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerEmoji}>📍</Text>
+          <Texto style={styles.headerTitle}>Endereço de Entrega</Texto>
+        </View>
+        <View style={styles.headerButtons}>
+          <MusicToggle size="small" />
+          <ThemeToggle size="small" />
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -101,10 +112,10 @@ export default function AddressScreen() {
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator size="small" color={colors.white} />
+                <ActivityIndicator size="small" color={colors.textLight} />
               ) : (
                 <>
-                  <Ionicons name="search" size={18} color={colors.white} />
+                  <Ionicons name="search" size={18} color={colors.textLight} />
                   <Texto style={styles.searchButtonText}>Buscar</Texto>
                 </>
               )}
@@ -181,7 +192,7 @@ export default function AddressScreen() {
             </View>
 
             <TouchableOpacity style={styles.saveButton} onPress={handleSaveAddress}>
-              <Ionicons name="checkmark-circle" size={20} color={colors.white} />
+              <Ionicons name="checkmark-circle" size={20} color={colors.textLight} />
               <Texto style={styles.saveButtonText}>Salvar Endereço</Texto>
             </TouchableOpacity>
           </View>
@@ -203,17 +214,17 @@ export default function AddressScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,
   },
   content: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl + 20,
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: spacing.xxl,
+    paddingTop: 50,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
     flexDirection: 'row',
@@ -221,10 +232,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...shadows.sm,
   },
-  headerTitle: {
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  headerEmoji: {
     fontSize: 22,
+    marginRight: spacing.xs,
+  },
+  headerTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: colors.chocolateBrown,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
   body: {
     padding: spacing.md,
@@ -277,7 +302,7 @@ const styles = StyleSheet.create({
   searchButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.textLight,
   },
   errorContainer: {
     flexDirection: 'row',
@@ -324,7 +349,7 @@ const styles = StyleSheet.create({
   saveButtonText: {
     fontSize: 16,
     fontWeight: '700',
-    color: colors.white,
+    color: colors.textLight,
   },
   infoCard: {
     flexDirection: 'row',
@@ -348,4 +373,3 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
-

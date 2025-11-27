@@ -1,90 +1,94 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
-import { useAudioPlayer } from 'expo-audio';
-import { useBooleanStorage } from '../hooks/useAsyncStorage';
+import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode, useRef } from 'react';
+import { Audio } from 'expo-av';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { STORAGE_KEYS } from '../types';
 
 interface MusicContextType {
   isPlaying: boolean;
-  isMusicEnabled: boolean;
   toggleMusic: () => void;
-  setMusicEnabled: (enabled: boolean) => void;
   isLoading: boolean;
 }
 
 const MusicContext = createContext<MusicContextType | undefined>(undefined);
-
-// Background music source - using a royalty-free lo-fi track URL
-// In production, you'd use a local asset or a proper licensed track
-const MUSIC_SOURCE = require('../../assets/acdc_highway_to_hell.mp3');
 
 interface MusicProviderProps {
   children: ReactNode;
 }
 
 export function MusicProvider({ children }: MusicProviderProps) {
-  const [isMusicEnabled, setMusicEnabledStorage, isLoadingPreference] = useBooleanStorage(
-    STORAGE_KEYS.MUSIC_ENABLED,
-    false // Default to off to respect platform autoplay restrictions
-  );
-  
   const [isPlaying, setIsPlaying] = useState(false);
-  const player = useAudioPlayer(MUSIC_SOURCE);
+  const [isLoading, setIsLoading] = useState(true);
+  const soundRef = useRef<Audio.Sound | null>(null);
 
-  // Sync player state with enabled preference
+  // Load saved preference and initialize audio
   useEffect(() => {
-    if (!isLoadingPreference) {
-      if (isMusicEnabled && !player.playing) {
-        player.loop = true;
-        player.play();
-        setIsPlaying(true);
-      } else if (!isMusicEnabled && player.playing) {
-        player.pause();
-        setIsPlaying(false);
+    const initAudio = async () => {
+      try {
+        // Configure audio mode
+        await Audio.setAudioModeAsync({
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+        });
+
+        // Load the sound
+        const { sound } = await Audio.Sound.createAsync(
+          require('../../assets/acdc_highway_to_hell.mp3'),
+          { isLooping: true, volume: 0.5 }
+        );
+        soundRef.current = sound;
+
+        // Check saved preference
+        const savedPref = await AsyncStorage.getItem(STORAGE_KEYS.MUSIC_ENABLED);
+        if (savedPref === 'true') {
+          await sound.playAsync();
+          setIsPlaying(true);
+        }
+      } catch (error) {
+        console.error('Error initializing audio:', error);
+      } finally {
+        setIsLoading(false);
       }
-    }
-  }, [isMusicEnabled, isLoadingPreference, player]);
+    };
 
-  // Update isPlaying state when player state changes
-  useEffect(() => {
-    setIsPlaying(player.playing);
-  }, [player.playing]);
+    initAudio();
 
-  const toggleMusic = useCallback(() => {
-    if (player.playing) {
-      player.pause();
-      setIsPlaying(false);
-      setMusicEnabledStorage(false);
-    } else {
-      player.loop = true;
-      player.play();
-      setIsPlaying(true);
-      setMusicEnabledStorage(true);
-    }
-  }, [player, setMusicEnabledStorage]);
-
-  const setMusicEnabled = useCallback(
-    async (enabled: boolean) => {
-      await setMusicEnabledStorage(enabled);
-      if (enabled && !player.playing) {
-        player.loop = true;
-        player.play();
-        setIsPlaying(true);
-      } else if (!enabled && player.playing) {
-        player.pause();
-        setIsPlaying(false);
+    // Cleanup on unmount
+    return () => {
+      if (soundRef.current) {
+        soundRef.current.unloadAsync();
       }
-    },
-    [player, setMusicEnabledStorage]
-  );
+    };
+  }, []);
+
+  const toggleMusic = useCallback(async () => {
+    if (!soundRef.current) return;
+
+    try {
+      const status = await soundRef.current.getStatusAsync();
+      
+      if (status.isLoaded) {
+        if (status.isPlaying) {
+          await soundRef.current.pauseAsync();
+          setIsPlaying(false);
+          await AsyncStorage.setItem(STORAGE_KEYS.MUSIC_ENABLED, 'false');
+        } else {
+          await soundRef.current.playAsync();
+          setIsPlaying(true);
+          await AsyncStorage.setItem(STORAGE_KEYS.MUSIC_ENABLED, 'true');
+        }
+      }
+    } catch (error) {
+      console.error('Error toggling music:', error);
+    }
+  }, []);
 
   return (
     <MusicContext.Provider
       value={{
         isPlaying,
-        isMusicEnabled,
         toggleMusic,
-        setMusicEnabled,
-        isLoading: isLoadingPreference,
+        isLoading,
       }}
     >
       {children}
@@ -99,4 +103,3 @@ export function useMusic(): MusicContextType {
   }
   return context;
 }
-

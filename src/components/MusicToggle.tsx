@@ -1,9 +1,9 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useMusic } from '../contexts';
+import { TouchableOpacity, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useMusic, useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing, shadows } from '../theme';
+import { borderRadius, spacing, shadows } from '../theme';
 
 interface MusicToggleProps {
   showLabel?: boolean;
@@ -12,12 +12,19 @@ interface MusicToggleProps {
 
 export default function MusicToggle({ showLabel = false, size = 'medium' }: MusicToggleProps) {
   const { isPlaying, toggleMusic, isLoading } = useMusic();
+  const { colors, isDark } = useTheme();
 
-  const iconSize = size === 'small' ? 18 : size === 'large' ? 28 : 22;
-  const buttonSize = size === 'small' ? 36 : size === 'large' ? 52 : 44;
+  const iconSize = size === 'small' ? 16 : size === 'large' ? 26 : 20;
+  const buttonSize = size === 'small' ? 32 : size === 'large' ? 48 : 40;
+
+  const styles = createStyles(colors, isDark);
 
   if (isLoading) {
-    return null;
+    return (
+      <View style={[styles.button, { width: buttonSize, height: buttonSize }]}>
+        <ActivityIndicator size="small" color={colors.pastelPink} />
+      </View>
+    );
   }
 
   return (
@@ -25,7 +32,8 @@ export default function MusicToggle({ showLabel = false, size = 'medium' }: Musi
       onPress={toggleMusic}
       style={[
         styles.button,
-        { width: showLabel ? 'auto' : buttonSize, height: buttonSize },
+        { width: showLabel ? undefined : buttonSize, height: buttonSize },
+        showLabel && styles.buttonWithLabel,
         isPlaying && styles.buttonActive,
       ]}
       activeOpacity={0.7}
@@ -33,39 +41,40 @@ export default function MusicToggle({ showLabel = false, size = 'medium' }: Musi
       <Ionicons
         name={isPlaying ? 'musical-notes' : 'musical-notes-outline'}
         size={iconSize}
-        color={isPlaying ? colors.white : colors.chocolateBrown}
+        color={isPlaying ? colors.textLight : colors.chocolateBrown}
       />
       {showLabel && (
         <Texto
           style={[
             styles.label,
-            { color: isPlaying ? colors.white : colors.chocolateBrown },
+            { color: isPlaying ? colors.textLight : colors.chocolateBrown },
           ]}
         >
-          {isPlaying ? 'Música ON' : 'Música OFF'}
+          {isPlaying ? 'ON' : 'OFF'}
         </Texto>
       )}
     </TouchableOpacity>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.cream,
+    backgroundColor: isDark ? '#3D3D3D' : colors.cream,
     borderRadius: borderRadius.round,
+    ...shadows.sm,
+  },
+  buttonWithLabel: {
     paddingHorizontal: spacing.md,
-    ...shadows.md,
   },
   buttonActive: {
     backgroundColor: colors.pastelPink,
   },
   label: {
-    marginLeft: spacing.sm,
-    fontSize: 14,
+    marginLeft: spacing.xs,
+    fontSize: 12,
     fontWeight: '600',
   },
 });
-

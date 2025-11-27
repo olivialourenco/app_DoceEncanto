@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { FreteOption } from '../types';
 import { calculateFreteFromStore, formatCep, isValidCep } from '../services';
 import { usePersistentState } from '../hooks';
 import { STORAGE_KEYS } from '../types';
+import { useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing, shadows } from '../theme';
+import { borderRadius, spacing, shadows } from '../theme';
 
 interface FreteCalculatorProps {
   cartWeight?: number;
 }
 
 export default function FreteCalculator({ cartWeight = 0.5 }: FreteCalculatorProps) {
+  const { colors } = useTheme();
   const [lastCep, setLastCep] = usePersistentState<string>(STORAGE_KEYS.LAST_CEP, '');
   const [cep, setCep] = useState(lastCep);
   const [freteOptions, setFreteOptions] = useState<FreteOption[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const styles = createStyles(colors);
 
   // Update cep when lastCep is loaded from storage
   React.useEffect(() => {
@@ -73,9 +77,9 @@ export default function FreteCalculator({ cartWeight = 0.5 }: FreteCalculatorPro
           disabled={isLoading}
         >
           {isLoading ? (
-            <ActivityIndicator size="small" color={colors.white} />
+            <ActivityIndicator size="small" color={colors.textLight} />
           ) : (
-            <Ionicons name="search" size={20} color={colors.white} />
+            <Ionicons name="search" size={20} color={colors.textLight} />
           )}
         </TouchableOpacity>
       </View>
@@ -106,7 +110,7 @@ export default function FreteCalculator({ cartWeight = 0.5 }: FreteCalculatorPro
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
@@ -183,4 +187,3 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
   },
 });
-

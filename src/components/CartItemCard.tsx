@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { CartItem } from '../types';
-import { useCart } from '../contexts';
+import { useCart, useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing, shadows } from '../theme';
+import { borderRadius, spacing, shadows } from '../theme';
 
 interface CartItemCardProps {
   item: CartItem;
@@ -12,7 +12,10 @@ interface CartItemCardProps {
 
 export default function CartItemCard({ item }: CartItemCardProps) {
   const { updateQuantity, removeFromCart } = useCart();
+  const { colors } = useTheme();
   const product = item.product;
+
+  const styles = createStyles(colors);
 
   if (!product) return null;
 
@@ -76,7 +79,7 @@ export default function CartItemCard({ item }: CartItemCardProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: colors.white,
@@ -140,4 +143,3 @@ const styles = StyleSheet.create({
     color: colors.chocolateDark,
   },
 });
-

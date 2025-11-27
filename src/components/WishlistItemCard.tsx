@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { WishlistItem } from '../types';
-import { useWishlist, useCart } from '../contexts';
+import { useWishlist, useCart, useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing, shadows } from '../theme';
+import { borderRadius, spacing, shadows } from '../theme';
 
 interface WishlistItemCardProps {
   item: WishlistItem;
@@ -14,7 +14,10 @@ interface WishlistItemCardProps {
 export default function WishlistItemCard({ item, onPress }: WishlistItemCardProps) {
   const { removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { colors } = useTheme();
   const product = item.product;
+
+  const styles = createStyles(colors);
 
   if (!product) return null;
 
@@ -52,7 +55,7 @@ export default function WishlistItemCard({ item, onPress }: WishlistItemCardProp
           </Texto>
 
           <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
-            <Ionicons name="cart-outline" size={16} color={colors.white} />
+            <Ionicons name="cart-outline" size={16} color={colors.textLight} />
             <Texto style={styles.addButtonText}>Adicionar</Texto>
           </TouchableOpacity>
         </View>
@@ -61,7 +64,7 @@ export default function WishlistItemCard({ item, onPress }: WishlistItemCardProp
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   card: {
     flexDirection: 'row',
     backgroundColor: colors.white,
@@ -119,7 +122,6 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.white,
+    color: colors.textLight,
   },
 });
-

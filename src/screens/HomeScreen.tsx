@@ -6,16 +6,22 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
-  Image,
+  Dimensions,
+  TouchableOpacity,
+  Text,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Product, StoreInfo } from '../types';
 import { getProducts, fetchStoreInfo } from '../services';
-import { Texto, ProductCard, MusicToggle } from '../components';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { Texto, ProductCard, MusicToggle, ThemeToggle } from '../components';
+import { useTheme } from '../contexts';
+import { spacing, borderRadius, shadows } from '../theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
+  const { colors, isDark } = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [storeInfo, setStoreInfo] = useState<StoreInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +59,8 @@ export default function HomeScreen() {
   // Get highlighted products (first 4 for display)
   const highlightedProducts = products.slice(0, 4);
 
+  const styles = createStyles(colors);
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
@@ -66,6 +74,7 @@ export default function HomeScreen() {
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -75,19 +84,24 @@ export default function HomeScreen() {
         />
       }
     >
-      <StatusBar barStyle="dark-content" backgroundColor={colors.cream} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.cream} />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <View style={styles.logoContainer}>
-            <Texto style={styles.logoEmoji}>🍫</Texto>
-            <View>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoEmoji}>🍫</Text>
+            </View>
+            <View style={styles.logoTextContainer}>
               <Texto style={styles.storeName}>Doce Encanto</Texto>
               <Texto style={styles.storeTagline}>Brigaderia Artesanal</Texto>
             </View>
           </View>
-          <MusicToggle size="medium" />
+          <View style={styles.headerButtons}>
+            <MusicToggle size="small" />
+            <ThemeToggle size="small" />
+          </View>
         </View>
       </View>
 
@@ -115,7 +129,10 @@ export default function HomeScreen() {
 
       {/* Highlighted Products */}
       <View style={styles.section}>
-        <Texto style={styles.sectionTitle}>✨ Destaques</Texto>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionEmoji}>✨</Text>
+          <Texto style={styles.sectionTitle}>Destaques</Texto>
+        </View>
         <View style={styles.productsGrid}>
           {highlightedProducts.map(product => (
             <ProductCard
@@ -130,24 +147,26 @@ export default function HomeScreen() {
 
       {/* Categories Preview */}
       <View style={styles.categoriesSection}>
-        <Texto style={styles.sectionTitle}>🍰 Nossas Categorias</Texto>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionEmoji}>🍰</Text>
+          <Texto style={styles.sectionTitle}>Nossas Categorias</Texto>
+        </View>
         <View style={styles.categoriesGrid}>
-          <View style={styles.categoryCard}>
-            <Texto style={styles.categoryEmoji}>🍫</Texto>
-            <Texto style={styles.categoryName}>Brigadeiros</Texto>
-          </View>
-          <View style={styles.categoryCard}>
-            <Texto style={styles.categoryEmoji}>🎂</Texto>
-            <Texto style={styles.categoryName}>Bolos</Texto>
-          </View>
-          <View style={styles.categoryCard}>
-            <Texto style={styles.categoryEmoji}>🥧</Texto>
-            <Texto style={styles.categoryName}>Tortas</Texto>
-          </View>
-          <View style={styles.categoryCard}>
-            <Texto style={styles.categoryEmoji}>🍪</Texto>
-            <Texto style={styles.categoryName}>Cookies</Texto>
-          </View>
+          {[
+            { emoji: '🍫', name: 'Brigadeiros' },
+            { emoji: '🎂', name: 'Bolos' },
+            { emoji: '🥧', name: 'Tortas' },
+            { emoji: '🍪', name: 'Cookies' },
+          ].map((cat, index) => (
+            <TouchableOpacity 
+              key={index} 
+              style={styles.categoryCard}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.categoryEmoji}>{cat.emoji}</Text>
+              <Texto style={styles.categoryName}>{cat.name}</Texto>
+            </TouchableOpacity>
+          ))}
         </View>
       </View>
 
@@ -161,13 +180,13 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,
   },
   content: {
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl + 20,
   },
   loadingContainer: {
     flex: 1,
@@ -182,7 +201,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: spacing.xxl,
+    paddingTop: 50,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
     ...shadows.sm,
@@ -195,70 +214,97 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
-  logoEmoji: {
-    fontSize: 40,
+  logoCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.pastelPinkLight,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: spacing.sm,
   },
-  storeName: {
+  logoEmoji: {
     fontSize: 24,
+    textAlign: 'center',
+  },
+  logoTextContainer: {
+    flex: 1,
+  },
+  storeName: {
+    fontSize: 20,
     fontWeight: '700',
     color: colors.chocolateBrown,
   },
   storeTagline: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.pastelPinkDark,
     fontWeight: '500',
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   banner: {
     backgroundColor: colors.pastelPinkLight,
-    margin: spacing.md,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
     padding: spacing.md,
     borderRadius: borderRadius.lg,
-    alignItems: 'center',
   },
   bannerMessage: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.chocolateBrown,
     textAlign: 'center',
   },
   bannerPromotion: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.chocolateDark,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
     textAlign: 'center',
     fontWeight: '600',
   },
   bannerHours: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textMuted,
-    marginTop: spacing.sm,
+    marginTop: spacing.xs,
+    textAlign: 'center',
   },
   welcomeSection: {
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.lg,
+    paddingVertical: spacing.md,
   },
   welcomeTitle: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.chocolateBrown,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   welcomeText: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 20,
   },
   section: {
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  sectionEmoji: {
+    fontSize: 20,
+    marginRight: spacing.xs,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700',
     color: colors.chocolateBrown,
-    marginBottom: spacing.md,
   },
   productsGrid: {
     flexDirection: 'row',
@@ -267,7 +313,7 @@ const styles = StyleSheet.create({
   },
   categoriesSection: {
     paddingHorizontal: spacing.md,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
   },
   categoriesGrid: {
     flexDirection: 'row',
@@ -275,30 +321,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   categoryCard: {
-    width: '48%',
+    width: (SCREEN_WIDTH - spacing.md * 2 - spacing.sm) / 2,
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
-    padding: spacing.lg,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     ...shadows.sm,
   },
   categoryEmoji: {
-    fontSize: 36,
+    fontSize: 40,
     marginBottom: spacing.sm,
+    textAlign: 'center',
   },
   categoryName: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.chocolateBrown,
+    textAlign: 'center',
   },
   footer: {
     alignItems: 'center',
-    paddingVertical: spacing.xl,
+    paddingVertical: spacing.lg,
   },
   footerText: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.textMuted,
+    textAlign: 'center',
   },
 });
-

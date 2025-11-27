@@ -1,12 +1,12 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, Text } from 'react-native';
 import { useFonts, Montserrat_400Regular } from '@expo-google-fonts/montserrat';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 
-import { AppProviders, useCart, useWishlist } from './src/contexts';
+import { AppProviders, useCart, useWishlist, useTheme } from './src/contexts';
 import {
   HomeScreen,
   ProductsScreen,
@@ -15,11 +15,71 @@ import {
   WishlistScreen,
   AddressScreen,
 } from './src/screens';
-import { colors } from './src/theme';
+import { colors as defaultColors } from './src/theme';
 
 // Navigation types
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+// Custom Splash Screen Component - Doce Encanto
+function CustomSplash({ onFinish }: { onFinish: () => void }) {
+  useEffect(() => {
+    // Show our custom splash for 2 seconds
+    const timer = setTimeout(onFinish, 2000);
+    return () => clearTimeout(timer);
+  }, [onFinish]);
+
+  return (
+    <View style={splashStyles.container}>
+      <View style={splashStyles.logoCircle}>
+        <Text style={splashStyles.emoji}>🍫</Text>
+      </View>
+      <Text style={splashStyles.title}>Doce Encanto</Text>
+      <Text style={splashStyles.subtitle}>Brigaderia Artesanal</Text>
+      <Text style={splashStyles.footer}>Feito com 💖 e muito chocolate</Text>
+    </View>
+  );
+}
+
+const splashStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFF8E7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoCircle: {
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    backgroundColor: '#FFD6E0',
+    borderWidth: 5,
+    borderColor: '#F8B4C4',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emoji: {
+    fontSize: 80,
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#5D3A1A',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#E8A4B4',
+    fontWeight: '500',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 50,
+    fontSize: 14,
+    color: '#A0887A',
+  },
+});
 
 // Products stack navigator (for product details)
 function ProductsStack() {
@@ -59,26 +119,45 @@ function TabBarIcon({ name, focused, color, size, badge }: {
   size: number;
   badge?: number;
 }) {
+  const iconName = focused ? name : `${name}-outline`;
   return (
-    <View style={styles.iconContainer}>
+    <View style={tabStyles.iconContainer}>
       <Ionicons
-        name={focused ? name : `${name}-outline`}
+        name={iconName as any}
         size={size}
         color={color}
       />
       {badge !== undefined && badge > 0 && (
-        <View style={styles.badge}>
-          <Ionicons name="ellipse" size={16} color={colors.pastelPink} />
+        <View style={tabStyles.badge}>
+          <View style={tabStyles.badgeDot} />
         </View>
       )}
     </View>
   );
 }
 
-// Main tab navigator
+const tabStyles = StyleSheet.create({
+  iconContainer: {
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+  },
+  badgeDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#F8B4C4',
+  },
+});
+
+// Main tab navigator with theme support
 function MainTabs() {
   const { totalItems: cartItems } = useCart();
   const { totalItems: wishlistItems } = useWishlist();
+  const { colors } = useTheme();
 
   return (
     <Tab.Navigator
@@ -119,8 +198,19 @@ function MainTabs() {
         },
         tabBarActiveTintColor: colors.chocolateBrown,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarStyle: styles.tabBar,
-        tabBarLabelStyle: styles.tabBarLabel,
+        tabBarStyle: {
+          backgroundColor: colors.white,
+          borderTopColor: colors.creamDark,
+          borderTopWidth: 1,
+          paddingTop: 8,
+          paddingBottom: 8,
+          height: 65,
+        },
+        tabBarLabelStyle: {
+          fontFamily: 'FontePadrao',
+          fontSize: 11,
+          marginTop: 2,
+        },
         headerShown: false,
       })}
     >
@@ -136,9 +226,26 @@ function MainTabs() {
 // Main App component
 export default function App() {
   const [fonteCarregada] = useFonts({ FontePadrao: Montserrat_400Regular });
+  const [showSplash, setShowSplash] = useState(true);
 
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
+  // Show loading while fonts load
   if (!fonteCarregada) {
-    return <View style={styles.loading} />;
+    return (
+      <View style={styles.loading}>
+        <View style={splashStyles.logoCircle}>
+          <Text style={splashStyles.emoji}>🍫</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // Show our custom Doce Encanto splash
+  if (showSplash) {
+    return <CustomSplash onFinish={handleSplashFinish} />;
   }
 
   return (
@@ -153,27 +260,8 @@ export default function App() {
 const styles = StyleSheet.create({
   loading: {
     flex: 1,
-    backgroundColor: colors.cream,
-  },
-  tabBar: {
-    backgroundColor: colors.white,
-    borderTopColor: colors.creamDark,
-    borderTopWidth: 1,
-    paddingTop: 8,
-    paddingBottom: 8,
-    height: 65,
-  },
-  tabBarLabel: {
-    fontFamily: 'FontePadrao',
-    fontSize: 11,
-    marginTop: 2,
-  },
-  iconContainer: {
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
+    backgroundColor: '#FFF8E7',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

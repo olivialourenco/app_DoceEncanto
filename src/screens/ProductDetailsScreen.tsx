@@ -6,13 +6,16 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
-import { useCart, useWishlist } from '../contexts';
+import { useCart, useWishlist, useTheme } from '../contexts';
 import { Texto } from '../components';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { spacing, borderRadius, shadows } from '../theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function ProductDetailsScreen() {
   const route = useRoute<any>();
@@ -20,8 +23,11 @@ export default function ProductDetailsScreen() {
   const { product } = route.params as { product: Product };
   const { addToCart } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { colors, isDark } = useTheme();
 
   const isFavorite = isInWishlist(product.id);
+
+  const styles = createStyles(colors);
 
   const handleAddToCart = () => {
     addToCart(product.id);
@@ -47,7 +53,7 @@ export default function ProductDetailsScreen() {
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Ionicons name="arrow-back" size={24} color={colors.white} />
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.favoriteButton}
@@ -56,7 +62,7 @@ export default function ProductDetailsScreen() {
             <Ionicons
               name={isFavorite ? 'heart' : 'heart-outline'}
               size={24}
-              color={isFavorite ? colors.error : colors.white}
+              color={isFavorite ? '#E57373' : '#FFFFFF'}
             />
           </TouchableOpacity>
         </View>
@@ -74,13 +80,13 @@ export default function ProductDetailsScreen() {
 
         <Texto style={styles.name}>{product.name}</Texto>
 
-        <View style={styles.priceContainer}>
+        <View style={styles.priceRow}>
           <Texto style={styles.price}>
             R$ {product.price.toFixed(2).replace('.', ',')}
           </Texto>
           {product.available && (
             <View style={styles.availableBadge}>
-              <Ionicons name="checkmark-circle" size={14} color={colors.success} />
+              <Ionicons name="checkmark-circle" size={16} color={colors.success} />
               <Texto style={styles.availableText}>Disponível</Texto>
             </View>
           )}
@@ -123,7 +129,7 @@ export default function ProductDetailsScreen() {
           style={styles.addToCartButton}
           onPress={handleAddToCart}
         >
-          <Ionicons name="cart" size={20} color={colors.white} />
+          <Ionicons name="cart" size={20} color={colors.textLight} />
           <Texto style={styles.addToCartText}>Adicionar ao Carrinho</Texto>
         </TouchableOpacity>
       </View>
@@ -131,14 +137,15 @@ export default function ProductDetailsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,
   },
   imageContainer: {
     position: 'relative',
-    height: 300,
+    width: SCREEN_WIDTH,
+    height: SCREEN_WIDTH * 0.85,
   },
   image: {
     width: '100%',
@@ -151,16 +158,16 @@ const styles = StyleSheet.create({
     right: 0,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingTop: spacing.xxl,
+    paddingTop: 50,
     paddingHorizontal: spacing.md,
   },
   backButton: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: borderRadius.round,
     padding: spacing.sm,
   },
   favoriteButton: {
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: 'rgba(0,0,0,0.4)',
     borderRadius: borderRadius.round,
     padding: spacing.sm,
   },
@@ -169,11 +176,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.cream,
     borderTopLeftRadius: borderRadius.xl,
     borderTopRightRadius: borderRadius.xl,
-    marginTop: -spacing.lg,
+    marginTop: -24,
   },
   contentContainer: {
-    padding: spacing.lg,
-    paddingBottom: spacing.xxl * 2,
+    padding: spacing.md,
+    paddingBottom: 120,
   },
   categoryBadge: {
     backgroundColor: colors.pastelPinkLight,
@@ -184,56 +191,61 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   categoryText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     color: colors.chocolateBrown,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
   name: {
-    fontSize: 26,
+    fontSize: 22,
     fontWeight: '700',
     color: colors.chocolateBrown,
     marginBottom: spacing.sm,
   },
-  priceContainer: {
+  priceRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: spacing.md,
   },
   price: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.chocolateDark,
   },
   availableBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
+    backgroundColor: colors.white,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: borderRadius.round,
+    gap: 4,
   },
   availableText: {
-    fontSize: 13,
+    fontSize: 12,
     color: colors.success,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   divider: {
     height: 1,
     backgroundColor: colors.creamDark,
-    marginVertical: spacing.lg,
+    marginVertical: spacing.md,
   },
   descriptionTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: colors.chocolateBrown,
-    marginBottom: spacing.sm,
+    marginBottom: spacing.xs,
   },
   description: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   infoSection: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
     padding: spacing.md,
@@ -250,12 +262,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   actionBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     padding: spacing.md,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.white,
     borderTopWidth: 1,
     borderTopColor: colors.creamDark,
-    gap: spacing.md,
+    gap: spacing.sm,
     ...shadows.lg,
   },
   wishlistButton: {
@@ -268,7 +285,7 @@ const styles = StyleSheet.create({
   addToCartButton: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: colors.pastelPink,
+    backgroundColor: colors.chocolateBrown,
     borderRadius: borderRadius.md,
     padding: spacing.md,
     justifyContent: 'center',
@@ -276,9 +293,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   addToCartText: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
-    color: colors.white,
+    color: colors.textLight,
   },
 });
-

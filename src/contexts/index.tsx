@@ -2,10 +2,12 @@ import React, { ReactNode } from 'react';
 import { MusicProvider } from './MusicContext';
 import { CartProvider } from './CartContext';
 import { WishlistProvider } from './WishlistContext';
+import { ThemeProvider } from './ThemeContext';
 
 export { MusicProvider, useMusic } from './MusicContext';
 export { CartProvider, useCart } from './CartContext';
 export { WishlistProvider, useWishlist } from './WishlistContext';
+export { ThemeProvider, useTheme } from './ThemeContext';
 
 interface AppProvidersProps {
   children: ReactNode;
@@ -16,13 +18,14 @@ interface AppProvidersProps {
  */
 export function AppProviders({ children }: AppProvidersProps) {
   return (
-    <MusicProvider>
-      <CartProvider>
-        <WishlistProvider>
-          {children}
-        </WishlistProvider>
-      </CartProvider>
-    </MusicProvider>
+    <ThemeProvider>
+      <MusicProvider>
+        <CartProvider>
+          <WishlistProvider>
+            {children}
+          </WishlistProvider>
+        </CartProvider>
+      </MusicProvider>
+    </ThemeProvider>
   );
 }
-

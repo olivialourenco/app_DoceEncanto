@@ -1,8 +1,9 @@
 import React from 'react';
 import { ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
 import { ProductCategory } from '../types';
+import { useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing } from '../theme';
+import { borderRadius, spacing } from '../theme';
 
 interface CategoryFilterProps {
   categories: ProductCategory[];
@@ -24,6 +25,9 @@ export default function CategoryFilter({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <ScrollView
       horizontal
@@ -56,7 +60,7 @@ export default function CategoryFilter({
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -85,4 +89,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-

@@ -135,3 +135,5 @@ export function calculateCartTotal(items: CartItem[]): number {
   }, 0);
 }
 
+
+

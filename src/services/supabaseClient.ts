@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 
 // Supabase configuration
 // Note: In production, these should be environment variables
-const supabaseUrl = 'https://roxefslcjfehxitcxppl.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJveGVmc2xjamZlaHhpdGN4cHBsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0NjkwNjEsImV4cCI6MjA2MjA0NTA2MX0.IsXLyqUPCpqDdRpJJiKgAg4JrqLnGhPjr5P4vVjbfxw';
+const supabaseUrl = 'https://vwicvphqasufjcgdochs.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3aWN2cGhxYXN1ZmpjZ2RvY2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyNjIyMTMsImV4cCI6MjA3OTgzODIxM30.NitM16wEmQ8y0BkuPcqVTHUCWZYU3jwFsXk-ervQwg8';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

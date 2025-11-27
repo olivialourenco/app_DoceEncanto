@@ -6,15 +6,18 @@ import {
   StatusBar,
   ActivityIndicator,
   RefreshControl,
+  Text,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Product, ProductCategory } from '../types';
 import { getProducts, getCategories, getProductsByCategory } from '../services';
-import { Texto, ProductCard, CategoryFilter, MusicToggle } from '../components';
-import { colors, spacing, shadows } from '../theme';
+import { Texto, ProductCard, CategoryFilter, MusicToggle, ThemeToggle } from '../components';
+import { useTheme } from '../contexts';
+import { spacing, shadows } from '../theme';
 
 export default function ProductsScreen() {
   const navigation = useNavigation<any>();
+  const { colors, isDark } = useTheme();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<ProductCategory[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
@@ -55,6 +58,8 @@ export default function ProductsScreen() {
     navigation.navigate('ProductDetails', { product });
   };
 
+  const styles = createStyles(colors);
+
   const renderProduct = ({ item }: { item: Product }) => (
     <ProductCard
       product={item}
@@ -77,7 +82,7 @@ export default function ProductsScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Texto style={styles.emptyEmoji}>🍫</Texto>
+      <Text style={styles.emptyEmoji}>🍫</Text>
       <Texto style={styles.emptyTitle}>Nenhum produto encontrado</Texto>
       <Texto style={styles.emptyText}>
         Tente selecionar outra categoria ou volte mais tarde.
@@ -96,12 +101,18 @@ export default function ProductsScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.white} />
 
       {/* Header */}
       <View style={styles.header}>
-        <Texto style={styles.headerTitle}>🍰 Nossos Produtos</Texto>
-        <MusicToggle size="small" />
+        <View style={styles.headerLeft}>
+          <Text style={styles.headerEmoji}>🍰</Text>
+          <Texto style={styles.headerTitle}>Nossos Produtos</Texto>
+        </View>
+        <View style={styles.headerButtons}>
+          <MusicToggle size="small" />
+          <ThemeToggle size="small" />
+        </View>
       </View>
 
       <FlatList
@@ -125,7 +136,7 @@ export default function ProductsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,
@@ -143,7 +154,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: spacing.xxl,
+    paddingTop: 50,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
     flexDirection: 'row',
@@ -151,14 +162,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...shadows.sm,
   },
-  headerTitle: {
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerEmoji: {
     fontSize: 22,
+    marginRight: spacing.xs,
+  },
+  headerTitle: {
+    fontSize: 20,
     fontWeight: '700',
     color: colors.chocolateBrown,
   },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
   listContent: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl + 20,
   },
   resultsCount: {
     fontSize: 13,
@@ -174,6 +198,7 @@ const styles = StyleSheet.create({
   emptyEmoji: {
     fontSize: 64,
     marginBottom: spacing.md,
+    textAlign: 'center',
   },
   emptyTitle: {
     fontSize: 18,
@@ -187,4 +212,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

@@ -1,10 +1,14 @@
 import React from 'react';
-import { View, Image, TouchableOpacity, StyleSheet } from 'react-native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { View, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Product } from '../types';
-import { useWishlist } from '../contexts';
+import { useWishlist, useTheme } from '../contexts';
 import Texto from './Texto';
-import { colors, borderRadius, spacing, shadows } from '../theme';
+import { borderRadius, spacing, shadows } from '../theme';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const CARD_MARGIN = spacing.sm;
+const COMPACT_CARD_WIDTH = (SCREEN_WIDTH - spacing.md * 2 - CARD_MARGIN * 2) / 2;
 
 interface ProductCardProps {
   product: Product;
@@ -14,7 +18,10 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, onPress, compact = false }: ProductCardProps) {
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { colors } = useTheme();
   const isFavorite = isInWishlist(product.id);
+
+  const styles = createStyles(colors);
 
   const handleFavoritePress = () => {
     toggleWishlist(product.id);
@@ -39,15 +46,17 @@ export default function ProductCard({ product, onPress, compact = false }: Produ
         >
           <Ionicons
             name={isFavorite ? 'heart' : 'heart-outline'}
-            size={22}
+            size={20}
             color={isFavorite ? colors.error : colors.chocolateBrown}
           />
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <Texto style={styles.category}>{product.category}</Texto>
-        <Texto style={styles.name} numberOfLines={2}>
+      <View style={[styles.content, compact && styles.contentCompact]}>
+        <Texto style={[styles.category, compact && styles.categoryCompact]} numberOfLines={1}>
+          {product.category}
+        </Texto>
+        <Texto style={[styles.name, compact && styles.nameCompact]} numberOfLines={2}>
           {product.name}
         </Texto>
         {!compact && (
@@ -55,7 +64,7 @@ export default function ProductCard({ product, onPress, compact = false }: Produ
             {product.description}
           </Texto>
         )}
-        <Texto style={styles.price}>
+        <Texto style={[styles.price, compact && styles.priceCompact]}>
           R$ {product.price.toFixed(2).replace('.', ',')}
         </Texto>
       </View>
@@ -63,7 +72,7 @@ export default function ProductCard({ product, onPress, compact = false }: Produ
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   card: {
     backgroundColor: colors.white,
     borderRadius: borderRadius.lg,
@@ -72,45 +81,58 @@ const styles = StyleSheet.create({
     ...shadows.md,
   },
   cardCompact: {
-    flex: 1,
-    marginHorizontal: spacing.xs,
-    maxWidth: '48%',
+    width: COMPACT_CARD_WIDTH,
+    marginHorizontal: CARD_MARGIN / 2,
+    marginBottom: spacing.sm,
   },
   imageContainer: {
     position: 'relative',
+    width: '100%',
+    aspectRatio: 1,
   },
   image: {
     width: '100%',
-    height: 180,
+    height: '100%',
   },
   imageCompact: {
-    height: 140,
+    // Uses aspectRatio from container
   },
   favoriteButton: {
     position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-    backgroundColor: colors.white,
+    top: spacing.xs,
+    right: spacing.xs,
+    backgroundColor: 'rgba(255,255,255,0.9)',
     borderRadius: borderRadius.round,
     padding: spacing.xs,
-    ...shadows.sm,
   },
   content: {
     padding: spacing.md,
   },
+  contentCompact: {
+    padding: spacing.sm,
+  },
   category: {
-    fontSize: 11,
+    fontSize: 10,
     color: colors.pastelPinkDark,
     textTransform: 'uppercase',
     fontWeight: '600',
     letterSpacing: 0.5,
-    marginBottom: spacing.xs,
+    marginBottom: 2,
+  },
+  categoryCompact: {
+    fontSize: 9,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.chocolateBrown,
     marginBottom: spacing.xs,
+    lineHeight: 20,
+  },
+  nameCompact: {
+    fontSize: 12,
+    lineHeight: 16,
+    marginBottom: 4,
   },
   description: {
     fontSize: 13,
@@ -119,9 +141,11 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   price: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: colors.chocolateDark,
   },
+  priceCompact: {
+    fontSize: 13,
+  },
 });
-

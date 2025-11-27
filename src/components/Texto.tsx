@@ -1,16 +1,16 @@
 import React, { ReactNode } from 'react';
-import { Text, StyleSheet, TextStyle } from 'react-native';
+import { Text, StyleSheet, TextStyle, TextProps } from 'react-native';
 import { colors, typography } from '../theme';
 
-interface TextoProps {
+interface TextoProps extends TextProps {
   children: ReactNode;
   style?: TextStyle | TextStyle[];
   variant?: 'body' | 'title' | 'subtitle' | 'caption' | 'button';
 }
 
-export default function Texto({ children, style, variant = 'body' }: TextoProps) {
+export default function Texto({ children, style, variant = 'body', ...props }: TextoProps) {
   return (
-    <Text style={[estilos.padrao, estilos[variant], style]}>
+    <Text style={[estilos.padrao, estilos[variant], style]} {...props}>
       {children}
     </Text>
   );
@@ -46,4 +46,3 @@ const estilos = StyleSheet.create({
     textAlign: 'center',
   },
 });
-

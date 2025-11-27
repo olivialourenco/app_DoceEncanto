@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Brigaderia Doce Encanto",
-    "slug": "brigaderia-doce-encanto",
+    "name": "Doce Encanto",
+    "slug": "appDoceEncanto",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -14,14 +14,14 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brigaderiadoceencanto.app"
+      "bundleIdentifier": "com.doceencanto.brigaderia"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFF8E7"
       },
-      "package": "com.brigaderiadoceencanto.app"
+      "package": "com.doceencanto.brigaderia"
     },
     "web": {
       "favicon": "./assets/favicon.png"

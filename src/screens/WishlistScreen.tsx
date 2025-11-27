@@ -7,17 +7,21 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  Text,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Ionicons } from '@expo/vector-icons';
 import { WishlistItem } from '../types';
-import { useWishlist } from '../contexts';
-import { Texto, WishlistItemCard, MusicToggle } from '../components';
-import { colors, spacing, borderRadius, shadows } from '../theme';
+import { useWishlist, useTheme } from '../contexts';
+import { Texto, WishlistItemCard, MusicToggle, ThemeToggle } from '../components';
+import { spacing, borderRadius, shadows } from '../theme';
 
 export default function WishlistScreen() {
   const navigation = useNavigation<any>();
   const { items, isLoading, totalItems, clearWishlist } = useWishlist();
+  const { colors, isDark } = useTheme();
+
+  const styles = createStyles(colors);
 
   const handleClearWishlist = () => {
     Alert.alert(
@@ -42,7 +46,9 @@ export default function WishlistScreen() {
 
   const renderEmpty = () => (
     <View style={styles.emptyContainer}>
-      <Texto style={styles.emptyEmoji}>❤️</Texto>
+      <View style={styles.emptyIconContainer}>
+        <Text style={styles.emptyEmoji}>❤️</Text>
+      </View>
       <Texto style={styles.emptyTitle}>Lista de desejos vazia</Texto>
       <Texto style={styles.emptyText}>
         Adicione produtos aos favoritos tocando no coração!
@@ -61,12 +67,13 @@ export default function WishlistScreen() {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={colors.white} />
+      <StatusBar barStyle={isDark ? "light-content" : "dark-content"} backgroundColor={colors.white} />
 
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Texto style={styles.headerTitle}>❤️ Favoritos</Texto>
+          <Text style={styles.headerEmoji}>❤️</Text>
+          <Texto style={styles.headerTitle}>Favoritos</Texto>
           {totalItems > 0 && (
             <View style={styles.badge}>
               <Texto style={styles.badgeText}>{totalItems}</Texto>
@@ -80,6 +87,7 @@ export default function WishlistScreen() {
             </TouchableOpacity>
           )}
           <MusicToggle size="small" />
+          <ThemeToggle size="small" />
         </View>
       </View>
 
@@ -98,7 +106,7 @@ export default function WishlistScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.cream,
@@ -116,7 +124,7 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.white,
-    paddingTop: spacing.xxl,
+    paddingTop: 50,
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.md,
     flexDirection: 'row',
@@ -127,15 +135,18 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
+    gap: spacing.xs,
+  },
+  headerEmoji: {
+    fontSize: 22,
+    marginRight: spacing.xs,
   },
   headerTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: '700',
     color: colors.chocolateBrown,
   },
@@ -144,18 +155,19 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.round,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
+    marginLeft: spacing.sm,
   },
   badgeText: {
     fontSize: 12,
     fontWeight: '700',
-    color: colors.white,
+    color: colors.textLight,
   },
   clearButton: {
     padding: spacing.sm,
   },
   listContent: {
     padding: spacing.md,
-    paddingBottom: spacing.xxl,
+    paddingBottom: spacing.xxl + 20,
   },
   emptyContainer: {
     flex: 1,
@@ -163,9 +175,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: spacing.xl,
   },
+  emptyIconContainer: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: colors.pastelPinkLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
   emptyEmoji: {
-    fontSize: 64,
-    marginBottom: spacing.md,
+    fontSize: 60,
+    textAlign: 'center',
   },
   emptyTitle: {
     fontSize: 20,
@@ -179,4 +200,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
